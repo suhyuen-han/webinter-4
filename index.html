@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>말 분쇄기</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      text-align: center;
+      padding: 20px;
+        color: white;
+      background-image: url("2.jpg");  
+  background-size: cover;           
+  background-position: center;  
+
+       
+    }
+    h1 {
+      font-size: 4rem;
+      font-c
+      margin-bottom: 50px;
+    }
+    .description {
+      margin: 20px 0;
+      font-size: 1rem;
+    }
+    .machine-wrap {
+      position: relative; 
+      display: inline-block;
+      margin-top: 100px;
+    }
+    .click-guide {
+  font-size: 1rem;
+  color: white;
+  font-weight: bold;
+  white-space: nowrap;   
+  margin-right: 100px;
+
+}
+    #machine {
+      position: relative;
+      z-index: 10;
+      cursor: pointer;
+      margin-top: 350px;
+      margin-right:100px ;
+      width: 500px;
+    }
+
+    #controls {
+      margin-top: 20px;
+    }
+    input[type="text"] {
+      padding: 10px;
+      font-size: 1rem;
+      width: 250px;
+    }
+
+    
+    #emitter {
+      position: absolute;
+      left: 48%;       
+      bottom: 61%;     
+      width: 200px;    
+      height: 150px;   
+      transform: translateX(-50%);
+      pointer-events: none;
+      overflow: visible;
+    }
+    .piece {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 2.5rem;
+      font-weight: bold;
+      opacity: 0.9;
+      animation: fall 1.2s ease-out forwards;
+      pointer-events: none;
+      user-select: none;
+      
+    }
+    @keyframes fall {
+       0%   { transform: translateX(-50%) translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateX(calc(-50% + var(--x))) 
+                     translateY(-500px) 
+                     rotate(var(--r)); 
+          opacity: 0; }
+}
+
+    }
+  </style>
+</head>
+<body>
+  <h1> 우리말 분쇄기 </h1>
+  <p class="description">~ 듣기 싫은 말 분쇄해드려요 ~</p>
+  <p class="description">분쇄하고 싶은 말:</p>
+
+
+  <div id="controls">
+    <input id="mytype" type="text" placeholder="여기에 말을 적으세요">
+    <input id="mycolor" type="color" value="#ff00ff">
+  </div>
+
+  <!-- 분쇄기 + emitter -->
+  <div class="machine-wrap">
+    <img id="machine" src="1.png" alt="말 분쇄기">
+    <div id="emitter"></div>
+    <p class="click-guide"> * 분쇄기를 클릭하면 분쇄됩니다</p>
+  </div>
+
+  <script>
+    const machine = document.getElementById("machine");
+    const inputText = document.getElementById("mytype");
+    const emitter = document.getElementById("emitter");
+    const colorPicker = document.getElementById("mycolor");
+
+    
+    function splitHangul(text) {
+      const chosung = ["ㄱ","ㄲ","ㄴ","ㄷ","ㄸ","ㄹ","ㅁ","ㅂ","ㅃ","ㅅ","ㅆ","ㅇ","ㅈ","ㅉ","ㅊ","ㅋ","ㅌ","ㅍ","ㅎ"];
+      const jungsung = ["ㅏ","ㅐ","ㅑ","ㅒ","ㅓ","ㅔ","ㅕ","ㅖ","ㅗ","ㅘ","ㅙ","ㅚ","ㅛ","ㅜ","ㅝ","ㅞ","ㅟ","ㅠ","ㅡ","ㅢ","ㅣ"];
+      const jongsung = ["","ㄱ","ㄲ","ㄳ","ㄴ","ㄵ","ㄶ","ㄷ","ㄹ","ㄺ","ㄻ","ㄼ","ㄽ","ㄾ","ㄿ","ㅀ","ㅁ","ㅂ","ㅄ","ㅅ","ㅆ","ㅇ","ㅈ","ㅊ","ㅋ","ㅌ","ㅍ","ㅎ"];
+      let result = "";
+      for (let i = 0; i < text.length; i++) {
+        let code = text.charCodeAt(i);
+        if (code >= 0xAC00 && code <= 0xD7A3) {
+          code = code - 0xAC00;
+          const cho = Math.floor(code / (21 * 28));
+          const jung = Math.floor((code % (21 * 28)) / 28);
+          const jong = code % 28;
+          result += chosung[cho] + jungsung[jung] + (jongsung[jong] || "");
+        } else {
+          result += text[i];
+        }
+      }
+      return result;
+    }
+
+    
+    machine.onclick = function() {
+      const text = inputText.value;
+      if (!text) {
+        alert("먼저 말을 입력하세요!");
+        return;
+      }
+
+      emitter.innerHTML = ""; 
+      const crushed = splitHangul(text);
+
+      for (let i = 0; i < crushed.length; i++) {
+        const ch = crushed[i];
+        const span = document.createElement("span");
+        span.className = "piece";
+        span.textContent = ch;
+        span.style.color = colorPicker.value;
+
+        
+       span.style.setProperty("--x", (Math.random() * 300 - 150) + "px"); 
+       span.style.setProperty("--r", (Math.random() * 360 - 180) + "deg");
+     span.style.animationDelay = (i * 0.05) + "s";
+
+
+        emitter.appendChild(span);
+        span.addEventListener("animationend", () => span.remove());
+      }
+    }
+  </script>
+</body>
+</html>
